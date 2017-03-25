@@ -1,0 +1,94 @@
+// Test bench for ripple_adder
+// File : driver.h
+#include "systemc.h"
+
+SC_MODULE (driver)
+{
+sc_out<sc_uint<4> > d_a, d_b;
+
+void prc_driver();
+
+SC_CTOR(driver)
+	{
+	SC_THREAD(prc_driver);
+	}
+};
+	
+
+//File: driver.cpp
+#include "driver.h"
+
+void driver :: prc_driver{}
+{
+ sc_uint<4> i, j;
+ i = 0;
+ j = 0;
+ 
+ for (i = 0; i<16; i++)
+  {
+   for (j = 0; j<16; j++)
+   {
+     d_a = i;
+     d_b = j;
+     wait (5, SC_NS) ;
+    }
+   }
+  }
+
+
+
+//File:monitor.h
+#include"systemc.h"
+
+SC_MODULE(monitor)
+{
+ sc_in<sc_uint<4> >m_a, m_b, m_sum;
+ sc_in<bool> m_carry_out;
+
+ void prc_monitor();
+
+ SC_CTOR(monitor)
+ {
+  SC_METHOD(prc_monitor); 
+  sensitive << m_a << m_b << m_cin << m_sum << m_carry_out;
+ }
+}
+
+
+
+//File: monitor.cpp
+#include"monitor.h"
+
+void monitor :: prc_monitor()
+{
+    outfile <<"At time "<<sc_time_stamp()<<"::";
+    outfile <<"(a, b):" ;
+    outfile << m_a << m_b;
+    outfile <<"(sum,carry_out):"<<m_sum<<m_carry_out<<'\n';
+}
+
+
+//File : ripple_adder_main.cpp
+#include "driver.h"
+#include "monitor.h"
+#include "ripple_adder.h"
+
+int sc_main(int argc, char* argv[])
+{
+sc_signal<sc_uint<4> > t_a, t_b, t_sum;
+sc_signal<bool> t_carry_out;
+
+ripple_adder f1 ("RippleAdderWithFullAdder");
+//Positional Association:
+f1<<t_a<<t_b<<t_sum<<t_carry_out;
+
+driver d1("Generatewaveforms");
+d1<<t_a<<t_b;
+
+monitor mo1("Monitorwaveforms");
+mo1<<t_a<<t_b<<t_sum<<t_carry_out;
+
+sc_start(100, SC_NS);
+return(0);
+}
+

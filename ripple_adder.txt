@@ -1,0 +1,54 @@
+//File : ripple_adder.h
+
+#include "full_adder.h"
+SC_MODULE (ripple_adder)
+{
+    sc_in<sc_uint<4> > a, b;
+    sc_out<bool> carry_out;                          
+    sc_out<sc_uint<4> > sum;
+    bool c1, c2, c3, s1, s2, s3, s4;
+    bool c0 = 0;
+ 
+    full_adder *fa1_ptr. *fa2_ptr, *fa3_ptr, *fa4_ptr;
+    
+    void prc_ripple_adder();
+ 
+    SC_CTOR (ripple_adder)
+    {
+     fa1_ptr = new full_adder ("fa1");
+     (*fa1_ptr) (a[0], b[0], c0, s1, c1);
+     
+     fa2_ptr = new full_adder ("fa2");
+     (*fa2_ptr) (a[1], b[1], c1, s2, c2);
+     
+     fa3_ptr = new full_adder ("fa3");
+     (*fa3_ptr) (a[2], b[2], c2, s3, c3);
+     
+     fa4_ptr = new full_adder ("fa4");
+     (*fa4_ptr) (a[3], b[3], c3, s4, carry_out);
+     
+     SC_METHOD (prc_ripple_adder)
+     sensitive (c1,c2,c3);
+     
+     //destructor:
+     ~ripple_adder()
+     {
+       delete fa1_ptr;
+       delete fa2_ptr;
+       delete fa3_ptr;
+       delete fa4_ptr;  
+     }
+};
+
+
+//File : ripple_adder.cpp
+#include "ripple_adder.h"
+
+void ripple_adder :: prc_ripple_adder()
+{
+    sum[0] = s1;
+    sum[1] = s2;
+    sum[2] = s3;
+    sum[3] = s4;
+   
+}
